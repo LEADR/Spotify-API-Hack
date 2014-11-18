@@ -1,5 +1,6 @@
 $(document).ready( function() {
   $("#search-btn").click( function() {
+    $('.main-cont').html('');
     var query = $("#search-query").val();
     search(query);
   });
@@ -58,8 +59,6 @@ function search(query) {
       list.append(artist);
       $(".main-cont").append(list);
     });
-
-
   })
   .fail( function(jqXHR, error, errorThrown) {
     console.log("Request unsuccessful.");
