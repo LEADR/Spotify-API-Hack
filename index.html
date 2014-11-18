@@ -3,23 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <script src=""></script>
-  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
   <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="js/app.js"></script>
   <title>Spotify API Hack</title>
 </head>
 <body>
 
-  <div class="input-group  input-group-lg">
-    <input type="text" class="form-control" name="query" id="query"/>
-    <span class="input-group-btn">
-      <button type='button' class="btn btn-default">
-        <span class="glyphicon glyphicon-search" aria-label="Search"></span> Search
-      </button>
-    </span>
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="input-group  input-group-lg">
+        <input type="text" class="form-control" name="query" id="search-query"/>
+        <span class="input-group-btn" id="search-btn">
+          <button type='button' class="btn btn-default">
+            <span class="glyphicon glyphicon-search" aria-label="Search"></span> Search
+          </button>
+        </span>
+      </div>
+    </div>
   </div>
 
-  
+  <div class="row">
+    <div class="col-lg-6 main-cont">
+    </div>
+  </div>
+
+  <div class="templates" hidden>
+    <ul class="list-group results-list">
+    </ul>
+    <li class="list-group-item list-item artist-result" data-artist-id="">
+      <a href="#" class="image-link"><img class="thumb" src="" alt=""></a>
+      <a href="#" class="artist-link"></a>
+    </li>
+  </div>
+
 </body>
 </html>
