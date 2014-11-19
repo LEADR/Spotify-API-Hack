@@ -6,7 +6,7 @@ $(document).ready( function() {
   });
 });
 
-function findImageURL(item) {
+function findArtistThumb(item) {
   var url;
 
   $.each(item.images, function(i, obj) {
@@ -26,12 +26,14 @@ function showArtist(artist) {
   result.attr("data-artist-id", artist.id);
 
   var imageElem = result.find(".thumb");
-  imageElem.attr("src", findImageURL(artist));
+  imageElem.attr("src", findArtistThumb(artist));
 
   var artistName = result.find(".artist-link");
   artistName.text(artist.name);
 
-  result.click(loadArtist);
+  result.children().click( function(event) {
+  loadArtist($(this).parent("li"));
+  });
 
   return result;
 }
@@ -64,8 +66,44 @@ function search(query) {
     console.log("Request unsuccessful.");
     console.log(error);
   });
+
+  console.log(result);
 }
 
-function loadArtist() {
+function getArtist(artistId) {
+  var result = $.ajax({
+    url: "https://api.spotify.com/v1/artists/"+artistId,
+    data: {id: artistId},
+    dataType: "json",
+    type: "GET"
+  })
+  .done( function(result) {
+    console.log("Request successful.");
+  })
+  .fail( function() {
+    console.log("Request unsuccessful.");
+    console.log(error);
+  });
 
+  return result;
+}
+
+function loadArtist(listElem) {
+  var artistPage = $(".artist-page").clone();
+  var header = artistPage.find(".artist-header");
+  var image = artistPage.find(".artist-image");
+
+  var artistId = $(listElem).data("artist-id");
+  var artistObj = getArtist(artistId);
+
+  console.log(artistObj);
+  console.log(artistObj.name);
+  console.log(artistObj.images);
+
+  header.html(artistObj.name);
+  image.attr("src", artistObj.images[0].url);
+
+  $('.main-cont').html('');
+  $(".form-control").val('');
+  $(".main-cont").append(artistPage);
 }
