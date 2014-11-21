@@ -6,7 +6,7 @@ $(document).ready( function() {
   });
 });
 
-function findArtistThumb(item) {
+function findThumb(item) {
   var url;
 
   $.each(item.images, function(i, obj) {
@@ -20,13 +20,14 @@ function findArtistThumb(item) {
   return url;
 }
 
+
 function showArtist(artist) {
-  var result = $(".templates .list-item").clone();
+  var result = $(".templates .artist-result").clone();
 
   result.attr("data-artist-id", artist.id);
 
   var imageElem = result.find(".thumb");
-  imageElem.attr("src", findArtistThumb(artist));
+  imageElem.attr("src", findThumb(artist));
 
   var artistName = result.find(".artist-link");
   artistName.text(artist.name);
@@ -39,6 +40,22 @@ function showArtist(artist) {
 
   return result;
 }
+
+/*
+function showTrack(track) {
+  var result = $(".templates .artist-result").clone();
+
+  result.data("track-id", track.id);
+
+  var imageElem = result.find(".thumb");
+  imageElem.attr("src", findThumb(track));
+
+  var trackName = result.find(".track-title");
+  trackName = track.name;
+
+  return result;
+}
+*/
 
 function search(query) {
   var request = {
@@ -73,7 +90,6 @@ function search(query) {
 function getArtist(artistId) {
   $.ajax({
     url: "https://api.spotify.com/v1/artists/"+artistId,
-    data: {id: artistId},
     dataType: "json",
     type: "GET"
   })
@@ -87,11 +103,66 @@ function getArtist(artistId) {
     header.html(result.name);
     image.attr("src", result.images[0].url);
 
+    getTopTracks(artistId, artistPage);
+
     $('.main-cont').html('');
     $(".form-control").val('');
     $(".main-cont").append(artistPage);
   })
-  .fail( function() {
+  .fail( function(jqXHR, error, errorThrown) {
+    console.log("Request unsuccessful.");
+    console.log(error);
+  });
+}
+
+function getTopTracks(artistId, element) {
+  $.ajax({
+    url: "https://api.spotify.com/v1/artists/"+artistId+"/top-tracks",
+    data: {country: "US"},
+    dataType: "json",
+    type: "GET"
+  })
+  .done( function(response) {
+    console.log("Request successful.");
+    console.log(response);
+
+    var list = element.find(".tracks-list");
+
+    /*
+    for (i = 0; i<response.tracks.length; i++) {
+      console.log(this);
+
+      var result = $(".templates .track-result").clone();
+
+      result.data("track-id", response.tracks[i].id);
+
+      var imageElem = result.find(".thumb");
+      imageElem.attr("src", findThumb(response.tracks[i]));
+
+      var trackName = result.find(".track-title");
+      trackName.html(response.tracks[i].name);
+
+      list.append(result);
+    }
+    */
+
+    $.each(response.tracks, function(i, item) {
+      var result = $(".templates .track-result").clone();
+
+      result.data("track-id", item.id);
+
+      var imageElem = result.find(".thumb");
+      imageElem.attr("src", findThumb(item));
+
+      var trackName = result.find(".track-title");
+      trackName.html(item.name);
+
+      list.append(result);
+
+      artistPage.append(list);
+    });
+  })
+  .fail( function(jqXHR, error, errorThrown) {
     console.log("Request unsuccessful.");
     console.log(error);
   });
