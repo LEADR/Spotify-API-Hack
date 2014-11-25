@@ -104,6 +104,7 @@ function getArtist(artistId) {
     image.attr("src", result.images[0].url);
 
     getTopTracks(artistId, artistPage);
+    getRelated(artistId/*, element*/);
 
     $('.main-cont').html('');
     $(".form-control").val('');
@@ -115,7 +116,7 @@ function getArtist(artistId) {
   });
 }
 
-function getTopTracks(artistId, element) {
+function getTopTracks(artistId, parent) {
   $.ajax({
     url: "https://api.spotify.com/v1/artists/"+artistId+"/top-tracks",
     data: {country: "US"},
@@ -125,8 +126,10 @@ function getTopTracks(artistId, element) {
   .done( function(response) {
     console.log("Request successful.");
 
+    var list = $("<ul>").addClass("tracks-list");
+
     for (i = 0; i< response.tracks.length; i++) {
-      var list = element.find(".tracks-list");
+
       var result = $(".templates .track-result").clone();
       var thisTrack = response.tracks[i];
 
@@ -140,8 +143,73 @@ function getTopTracks(artistId, element) {
 
       list.append(result);
     }
+
+    parent.append(list);
   })
   .fail( function(jqXHR, error, errorThrown) {
+    console.log("Request unsuccessful.");
+    console.log(error);
+  });
+}
+
+function getRelated(artistId, element) {
+  $.ajax({
+    url: "https://api.spotify.com/v1/artists/"+artistId+"/related-artists",
+    dataType: "json",
+    type: "GET"
+  }).done( function(response) {
+    console.log("Request successful.");
+    console.log(response);
+
+    for (var i=0; i<5; i++) {
+      showRelated(response.artists[i].id);
+    }
+
+    /*
+    $.each(response.artists, function(i, item) {
+      // showRelated(item.id);
+      console.log(item);
+    });
+    */
+
+  }).fail( function(jqXHR, error, errorThrown) {
+    console.log("Request unsuccessful.");
+    console.log(error);
+  });
+}
+
+function showRelatedTrack(trackObject, parent) {
+  console.log(trackObject);
+
+  var listItem = $(".related-result").clone();
+
+  listItem.find(".thumb").attr("src", findThumb(trackObject.album));
+  listItem.find(".track-title").html(trackObject.name);
+  listItem.find(".artist-link").html(trackObject.artists[0].name);
+  listItem.attr("data-track-id", trackObject.id);
+  listItem.attr("data-artist-id", trackObject.artists[0].id);
+  listItem.attr("data-album-id", trackObject.album.id);
+
+  parent.append(listItem);
+}
+
+function showRelated(artistId) {
+  $.ajax({
+    url: "https://api.spotify.com/v1/artists/"+artistId+"/top-tracks",
+    data: {country: "US"},
+    dataType: "json",
+    type: "GET"
+  }).done( function(response) {
+    console.log("Request successful.");
+    console.log(response);
+
+    var list = $("<ul>");
+
+    showRelatedTrack(response.tracks[0], list);
+
+    $(".right-cont").append(list);
+
+  }).fail( function(jqXHR, error, errorThrown) {
     console.log("Request unsuccessful.");
     console.log(error);
   });
