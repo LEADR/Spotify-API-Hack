@@ -124,43 +124,22 @@ function getTopTracks(artistId, element) {
   })
   .done( function(response) {
     console.log("Request successful.");
-    console.log(response);
 
-    var list = element.find(".tracks-list");
-
-    /*
-    for (i = 0; i<response.tracks.length; i++) {
-      console.log(this);
-
+    for (i = 0; i< response.tracks.length; i++) {
+      var list = element.find(".tracks-list");
       var result = $(".templates .track-result").clone();
+      var thisTrack = response.tracks[i];
 
-      result.data("track-id", response.tracks[i].id);
+      result.attr("data-track-id", thisTrack.id);
 
       var imageElem = result.find(".thumb");
-      imageElem.attr("src", findThumb(response.tracks[i]));
+      imageElem.attr("src", findThumb(thisTrack.album));
 
       var trackName = result.find(".track-title");
-      trackName.html(response.tracks[i].name);
+      trackName.html(thisTrack.name);
 
       list.append(result);
     }
-    */
-
-    $.each(response.tracks, function(i, item) {
-      var result = $(".templates .track-result").clone();
-
-      result.data("track-id", item.id);
-
-      var imageElem = result.find(".thumb");
-      imageElem.attr("src", findThumb(item));
-
-      var trackName = result.find(".track-title");
-      trackName.html(item.name);
-
-      list.append(result);
-
-      artistPage.append(list);
-    });
   })
   .fail( function(jqXHR, error, errorThrown) {
     console.log("Request unsuccessful.");
