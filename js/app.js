@@ -1,9 +1,9 @@
 $(document).ready( function() {
-  $("#search-btn").click( function() {
-    $('.main-cont').html('');
-    var query = $("#search-query").val();
-    search(query);
-  });
+    $("#search-btn").click( function() {
+        $('.main-cont').html('');               // Clears content
+        var query = $("#search-query").val();   // Stores text from search bar
+        search(query);
+    });
 });
 
 function findThumb(item) {
@@ -20,25 +20,40 @@ function findThumb(item) {
   return url;
 }
 
+// Creates UI element for each Artist result
+function showArtist(artist) {       // Receives JSON object as argument
+    // Creates list item element
+    var result = $('<li data-artist-id=""></li>');
+    result.addClass("list-group-item artist-result");
+    result.attr("data-artist-id", artist.id);
 
-function showArtist(artist) {
-  var result = $(".templates .artist-result").clone();
+    // Creates clickable image element
+    var imageLink = $('<a href="#"></a>');
+    imageLink.addClass("image-link");
 
-  result.attr("data-artist-id", artist.id);
+    // Creates image element
+    var imageElem = $('<img src="" alt="">');
+    imageElem.addClass("thumb");
+    imageElem.attr("src", findThumb(artist));
 
-  var imageElem = result.find(".thumb");
-  imageElem.attr("src", findThumb(artist));
+    // Creates clickable artist name
+    var artistName = $('<a href="#"></a>');
+    artistName.addClass("artist-link");
+    artistName.text(artist.name);
 
-  var artistName = result.find(".artist-link");
-  artistName.text(artist.name);
+    // Appends elements to list item element
+    imageLink.append(imageElem);
+    result.append(imageElem);
+    result.append(artistName);
 
-  result.children().click( function(event) {
-    var listElem = $(this).parent("li");
-    var artistId = $(listElem).data("artist-id");
-    getArtist(artistId);
-  });
+    // Binds click handlers to image & artist name elements
+    result.children().click( function(event) {
+        var listElem = $(this).parent("li");
+        var artistId = $(listElem).data("artist-id");
+        getArtist(artistId);
+    });
 
-  return result;
+    return result;
 }
 
 /*
@@ -58,33 +73,41 @@ function showTrack(track) {
 */
 
 function search(query) {
-  var request = {
-    q: query,
-    type: "artist",
-    limit: 50,
-  };
+    // Parses HTTP request data
+    var request = {
+        q: query,
+        type: "artist",
+        limit: 50,
+    };
 
-  $.ajax({
-    url: "https://api.spotify.com/v1/search",
-    data: request,
-    dataType: "json",
-    type: "GET"
-  })
-  .done( function(result) {
-    console.log("Request successful.");
+    // AJAX Request
+    $.ajax({
+        url: "https://api.spotify.com/v1/search",
+        data: request,
+        dataType: "json",
+        type: "GET"
+    })
+    .done( function(result) {
+        console.log("Artist search request successful.");
 
-    var list = $(".templates .results-list").clone();
+        // Creates <ul> JQuery element
+        var list = $("<ul></ul>");
+        list.addClass("list-group results-list");
 
-    $.each(result.artists.items, function(i, item){
-      var artist = showArtist(item);
-      list.append(artist);
-      $(".main-cont").append(list);
+        // Iterates through search results
+        $.each(result.artists.items, function(i, item) {
+            // Adds each artist list item to list
+            var artist = showArtist(item);
+            list.append(artist);
+        });
+
+        // Adds list to page
+        $(".main-cont").append(list);
+    })
+    .fail( function(jqXHR, error, errorThrown) {
+        console.log("Request unsuccessful.");
+        console.log(error);
     });
-  })
-  .fail( function(jqXHR, error, errorThrown) {
-    console.log("Request unsuccessful.");
-    console.log(error);
-  });
 }
 
 function getArtist(artistId) {
@@ -104,14 +127,14 @@ function getArtist(artistId) {
     image.attr("src", result.images[0].url);
 
     getTopTracks(artistId, artistPage);
-    getRelated(artistId/*, element*/);
+    getRelated(artistId);     // getRelated(artistId, element);
 
     $('.main-cont').html('');
     $(".form-control").val('');
     $(".main-cont").append(artistPage);
   })
   .fail( function(jqXHR, error, errorThrown) {
-    console.log("Request unsuccessful.");
+    console.log("Get Artist Request unsuccessful.");
     console.log(error);
   });
 }
@@ -128,7 +151,7 @@ function getTopTracks(artistId, parent) {
 
     var list = $("<ul>").addClass("tracks-list");
 
-    for (i = 0; i< response.tracks.length; i++) {
+    for (i = 0; i < response.tracks.length; i++) {
 
       var result = $(".templates .track-result").clone();
       var thisTrack = response.tracks[i];
@@ -147,7 +170,8 @@ function getTopTracks(artistId, parent) {
     parent.append(list);
   })
   .fail( function(jqXHR, error, errorThrown) {
-    console.log("Request unsuccessful.");
+      console.log(artistId);
+    console.log("Get Top Tracks Request unsuccessful.");
     console.log(error);
   });
 }
@@ -173,7 +197,8 @@ function getRelated(artistId, element) {
     */
 
   }).fail( function(jqXHR, error, errorThrown) {
-    console.log("Request unsuccessful.");
+      console.log(artistId);
+    console.log("Get Related Request unsuccessful.");
     console.log(error);
   });
 }
@@ -210,7 +235,8 @@ function showRelated(artistId) {
     $(".right-cont").append(list);
 
   }).fail( function(jqXHR, error, errorThrown) {
-    console.log("Request unsuccessful.");
+      console.log(artistId);
+    console.log("Show Related Track Request unsuccessful.");
     console.log(error);
   });
 }
