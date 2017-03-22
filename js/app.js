@@ -141,7 +141,7 @@ function getArtist(artistId) {
         artistPage.append(header, /*image,*/ subHeader, tracksList);
 
         getTopTracks(artistId, artistPage);
-        getRelated(artistId, /*element*/);
+        getRelated(artistId/*, element*/);
 
         // Clears content from page
         $('.main-cont').html('');
@@ -207,10 +207,16 @@ function getRelated(artistId, element) {
         console.log("Get Related Artists request successful.");
         console.log(response);
 
+        var header = $("<h3></h3>").addClass("sub-header");
+        header.html("Related Tracks");
+        var list = $("<ul></ul>").addClass("list-group");
+
         // Iterates through first 5 related artists
         for (var i = 0; i < response.artists.length; i++) {
-            showFirstTopTrack(response.artists[i].id);
+            list.append(showFirstTopTrack(response.artists[i].id));
         }
+
+        $(".right-cont").append(header, list);
     })
     .fail( function(jqXHR, error, errorThrown) {
         console.log("Get Related Request unsuccessful.");
@@ -219,6 +225,10 @@ function getRelated(artistId, element) {
 }
 
 function showFirstTopTrack(artistId) {
+
+    var result = $("<li></li>").addClass("list-group-item track-result");
+    // result.attr("data-track-id", thisTrack.id);
+
     $.ajax({
         url: "https://api.spotify.com/v1/artists/"+artistId+"/top-tracks",
         data: {country: "US"},
@@ -228,15 +238,13 @@ function showFirstTopTrack(artistId) {
         console.log("Artist Top Tracks request successful.");
         console.log(response);
 
-        var list = $("<ul></ul>");
-        // showRelatedTrack(response.tracks[0], list);
+
 
         // Stores JSON data for each top track
         var thisTrack = response.tracks[0];
 
         // Creates HTML elements from response data
-        var result = $("<li></li>").addClass("list-group-item track-result");
-        result.attr("data-track-id", thisTrack.id);
+
         var imageElem = $("<img></img>").addClass("thumb");
         imageElem.attr("src", findThumb(thisTrack.album));
         var imageLink = $("<a></a>").addClass("image-link");
@@ -254,12 +262,11 @@ function showFirstTopTrack(artistId) {
         // ADD LINK TO TRACK TITLE
         //
         result.append(imageLink, artistName, trackName);
-        list.append(result);
-
-        $(".right-cont").append(list);
     }).fail( function(jqXHR, error, errorThrown) {
         console.log(artistId);
         console.log("Show Related Track Request unsuccessful.");
         console.log(error);
     });
+
+    return result;
 }
