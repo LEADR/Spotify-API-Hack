@@ -1,7 +1,12 @@
 $(document).ready( function() {
     $("#search-btn").click( function() {
-        $('.main-cont').html('');               // Clears content
-        var query = $("#search-query").val();   // Stores text from search bar
+
+        // Clears content
+        $('.main-cont').html('');
+        $(".right-cont").html('');
+
+        // Searches for text from search bar
+        var query = $("#search-query").val();
         search(query);
     });
 });
@@ -23,7 +28,7 @@ function findThumb(item) {
 // Creates UI element for each Artist result
 function showArtist(artist) {       // Receives JSON object as argument
     // Creates list item element
-    var result = $('<li data-artist-id=""></li>');
+    var result = $('<li></li>');
     result.addClass("list-group-item artist-result");
     result.attr("data-artist-id", artist.id);
 
@@ -37,14 +42,14 @@ function showArtist(artist) {       // Receives JSON object as argument
     imageElem.attr("src", findThumb(artist));
 
     // Creates clickable artist name
-    var artistName = $('<a href="#"></a>');
+    var artistName = $('<a></a>');
+    artistName.attr("href", "#")
     artistName.addClass("artist-link");
     artistName.text(artist.name);
 
     // Appends elements to list item element
     imageLink.append(imageElem);
-    result.append(imageElem);
-    result.append(artistName);
+    result.append(imageElem, artistName);
 
     // Binds click handlers to image & artist name elements
     result.children().click( function(event) {
@@ -111,132 +116,150 @@ function search(query) {
 }
 
 function getArtist(artistId) {
-  $.ajax({
-    url: "https://api.spotify.com/v1/artists/"+artistId,
-    dataType: "json",
-    type: "GET"
-  })
-  .done( function(result) {
-    console.log("Request successful.");
+    $.ajax({
+        url: "https://api.spotify.com/v1/artists/"+artistId,
+        dataType: "json",
+        type: "GET"
+    })
+    .done( function(result) {
+        console.log("Get artist request successful.");
 
-    var artistPage = $(".artist-page").clone();
-    var header = artistPage.find(".artist-header");
-    var image = artistPage.find(".artist-image");
+        // Artist Header element instantiated
+        var header = $("<h2></h2>").addClass("artist-header");
+        header.html(result.name);
+/*
+        // Artist image element instantiated
+        var image = $("<img></img>").addClass("artist-image");
+        image.attr("src", result.images[0].url);
+*/
+        // Other elements instantiated
+        var subHeader = $("<h4></h4").addClass("top-tracks");
+        var tracksList = $("<ul></ul>").addClass("list-group tracks-list");
 
-    header.html(result.name);
-    image.attr("src", result.images[0].url);
+        // Artist section instatiated with children
+        var artistPage = $("<section></section>").addClass("artist-page");
+        artistPage.append(header, /*image,*/ subHeader, tracksList);
 
-    getTopTracks(artistId, artistPage);
-    getRelated(artistId);     // getRelated(artistId, element);
+        getTopTracks(artistId, artistPage);
+        getRelated(artistId, /*element*/);
 
-    $('.main-cont').html('');
-    $(".form-control").val('');
-    $(".main-cont").append(artistPage);
-  })
-  .fail( function(jqXHR, error, errorThrown) {
-    console.log("Get Artist Request unsuccessful.");
-    console.log(error);
-  });
+        // Clears content from page
+        $('.main-cont').html('');
+        $(".form-control").val('');
+
+        // Loads artist content to page
+        $(".main-cont").append(artistPage);
+    })
+    .fail( function(jqXHR, error, errorThrown) {
+        console.log("Get Artist Request unsuccessful.");
+        console.log(error);
+    });
 }
 
 function getTopTracks(artistId, parent) {
-  $.ajax({
-    url: "https://api.spotify.com/v1/artists/"+artistId+"/top-tracks",
-    data: {country: "US"},
-    dataType: "json",
-    type: "GET"
-  })
-  .done( function(response) {
-    console.log("Request successful.");
+    $.ajax({
+        url: "https://api.spotify.com/v1/artists/"+artistId+"/top-tracks",
+        data: {country: "US"},
+        dataType: "json",
+        type: "GET"
+    })
+    .done( function(response) {
+        console.log("Artist top tracks request successful.");
 
-    var list = $("<ul>").addClass("tracks-list");
+        var list = $("<ul>").addClass("list-group tracks-list");
 
-    for (i = 0; i < response.tracks.length; i++) {
+        for (i = 0; i < response.tracks.length; i++) {
 
-      var result = $(".templates .track-result").clone();
-      var thisTrack = response.tracks[i];
+            // Stores JSON data for each top track
+            var thisTrack = response.tracks[i];
 
-      result.attr("data-track-id", thisTrack.id);
-
-      var imageElem = result.find(".thumb");
-      imageElem.attr("src", findThumb(thisTrack.album));
-
-      var trackName = result.find(".track-title");
-      trackName.html(thisTrack.name);
-
-      list.append(result);
-    }
-
-    parent.append(list);
-  })
-  .fail( function(jqXHR, error, errorThrown) {
-      console.log(artistId);
-    console.log("Get Top Tracks Request unsuccessful.");
-    console.log(error);
-  });
+            // Creates HTML elements from response data
+            var result = $("<li></li>").addClass("list-group-item track-result");
+            result.attr("data-track-id", thisTrack.id);
+            var imageElem = $("<img></img>").addClass("thumb");
+            imageElem.attr("src", findThumb(thisTrack.album));
+            var imageLink = $("<a></a>").addClass("image-link");
+            imageLink.append(imageElem);
+            var trackName = $("<a></a>").addClass("track-title link");
+            trackName.html(thisTrack.name);
+            //
+            // ADD LINK TO TRACK TITLE
+            //
+            result.append(imageLink, trackName);
+            list.append(result);
+        }
+        // Adds HTML to DOM
+        parent.append(list);
+    })
+    .fail( function(jqXHR, error, errorThrown) {
+        console.log("Artist top tracks unsuccessful.");
+        console.log(error);
+    });
 }
 
 function getRelated(artistId, element) {
-  $.ajax({
-    url: "https://api.spotify.com/v1/artists/"+artistId+"/related-artists",
-    dataType: "json",
-    type: "GET"
-  }).done( function(response) {
-    console.log("Request successful.");
-    console.log(response);
+    $.ajax({
+        url: "https://api.spotify.com/v1/artists/"+artistId+"/related-artists",
+        dataType: "json",
+        type: "GET"
+    })
+    .done( function(response) {
+        console.log("Get Related Artists request successful.");
+        console.log(response);
 
-    for (var i=0; i<5; i++) {
-      showRelated(response.artists[i].id);
-    }
-
-    /*
-    $.each(response.artists, function(i, item) {
-      // showRelated(item.id);
-      console.log(item);
+        // Iterates through first 5 related artists
+        for (var i = 0; i < response.artists.length; i++) {
+            showFirstTopTrack(response.artists[i].id);
+        }
+    })
+    .fail( function(jqXHR, error, errorThrown) {
+        console.log("Get Related Request unsuccessful.");
+        console.log(error);
     });
-    */
-
-  }).fail( function(jqXHR, error, errorThrown) {
-      console.log(artistId);
-    console.log("Get Related Request unsuccessful.");
-    console.log(error);
-  });
 }
 
-function showRelatedTrack(trackObject, parent) {
-  console.log(trackObject);
+function showFirstTopTrack(artistId) {
+    $.ajax({
+        url: "https://api.spotify.com/v1/artists/"+artistId+"/top-tracks",
+        data: {country: "US"},
+        dataType: "json",
+        type: "GET"
+    }).done( function(response) {
+        console.log("Artist Top Tracks request successful.");
+        console.log(response);
 
-  var listItem = $(".related-result").clone();
+        var list = $("<ul></ul>");
+        // showRelatedTrack(response.tracks[0], list);
 
-  listItem.find(".thumb").attr("src", findThumb(trackObject.album));
-  listItem.find(".track-title").html(trackObject.name);
-  listItem.find(".artist-link").html(trackObject.artists[0].name);
-  listItem.attr("data-track-id", trackObject.id);
-  listItem.attr("data-artist-id", trackObject.artists[0].id);
-  listItem.attr("data-album-id", trackObject.album.id);
+        // Stores JSON data for each top track
+        var thisTrack = response.tracks[0];
 
-  parent.append(listItem);
-}
+        // Creates HTML elements from response data
+        var result = $("<li></li>").addClass("list-group-item track-result");
+        result.attr("data-track-id", thisTrack.id);
+        var imageElem = $("<img></img>").addClass("thumb");
+        imageElem.attr("src", findThumb(thisTrack.album));
+        var imageLink = $("<a></a>").addClass("image-link");
+        imageLink.append(imageElem);
+        var trackName = $("<a></a>").addClass("track-title link");
+        trackName.html(thisTrack.name);
+        var artistName = $("<a></a><br>").addClass("artist-link");
+        $.each(thisTrack.artists, function(i, obj) {
+            if (i > 0) {
+                artistName.append( document.createTextNode( " & "));
+            }
+            artistName.append( document.createTextNode( obj.name));
+        });
+        //
+        // ADD LINK TO TRACK TITLE
+        //
+        result.append(imageLink, artistName, trackName);
+        list.append(result);
 
-function showRelated(artistId) {
-  $.ajax({
-    url: "https://api.spotify.com/v1/artists/"+artistId+"/top-tracks",
-    data: {country: "US"},
-    dataType: "json",
-    type: "GET"
-  }).done( function(response) {
-    console.log("Request successful.");
-    console.log(response);
-
-    var list = $("<ul>");
-
-    showRelatedTrack(response.tracks[0], list);
-
-    $(".right-cont").append(list);
-
-  }).fail( function(jqXHR, error, errorThrown) {
-      console.log(artistId);
-    console.log("Show Related Track Request unsuccessful.");
-    console.log(error);
-  });
+        $(".right-cont").append(list);
+    }).fail( function(jqXHR, error, errorThrown) {
+        console.log(artistId);
+        console.log("Show Related Track Request unsuccessful.");
+        console.log(error);
+    });
 }
