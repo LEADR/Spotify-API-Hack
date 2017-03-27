@@ -28,27 +28,31 @@ function findThumb(item) {
 // Creates UI element for each Artist result
 function showArtist(artist) {       // Receives JSON object as argument
     // Creates list item element
-    var result = $('<li></li>');
-    result.addClass("list-group-item artist-result");
-    result.attr("data-artist-id", artist.id);
+    var result = $("<li></li>", {
+        "class": "list-group-item artist-result",
+        "data-artist-id": artist.id
+    });
 
     // Creates clickable image element
-    var imageLink = $('<a href="#"></a>');
-    imageLink.addClass("image-link");
+    var imageLink = $("<a></a>", {
+        "class": "image-link",
+        "href": "#"
+    })
 
     // Creates image element
-    var imageElem = $('<img src="" alt="">');
-    imageElem.addClass("thumb");
-    imageElem.attr("src", findThumb(artist));
+    var imageElem = $("<img>", {
+        "class": "thumb",
+        "src": findThumb(artist)
+    }).appendTo(imageLink);
 
     // Creates clickable artist name
-    var artistName = $('<a></a>');
-    artistName.attr("href", "#")
-    artistName.addClass("artist-link");
-    artistName.text(artist.name);
+    var artistName = $("<a></a>", {
+        "class": "artist-link",
+        "href": "#",
+        text: artist.name
+    });
 
     // Appends elements to list item element
-    imageLink.append(imageElem);
     result.append(imageElem, artistName);
 
     // Binds click handlers to image & artist name elements
@@ -96,8 +100,7 @@ function search(query) {
         console.log("Artist search request successful.");
 
         // Creates <ul> JQuery element
-        var list = $("<ul></ul>");
-        list.addClass("list-group results-list");
+        var list = $("<ul></ul>").addClass("list-group results-list");
 
         // Iterates through search results
         $.each(result.artists.items, function(i, item) {
@@ -125,20 +128,24 @@ function getArtist(artistId) {
         console.log("Get artist request successful.");
 
         // Artist Header element instantiated
-        var header = $("<h2></h2>").addClass("artist-header");
-        header.html(result.name);
+        var header = $("<h2></h2>", {
+            "class": "artist-header",
+            html: result.name
+        });
 /*
         // Artist image element instantiated
         var image = $("<img></img>").addClass("artist-image");
         image.attr("src", result.images[0].url);
 */
         // Other elements instantiated
-        var subHeader = $("<h4></h4").addClass("top-tracks");
+        var subHeader = $("<h4></h4>").addClass("top-tracks");
+
         var tracksList = $("<ul></ul>").addClass("list-group tracks-list");
 
         // Artist section instatiated with children
-        var artistPage = $("<section></section>").addClass("artist-page");
-        artistPage.append(header, /*image,*/ subHeader, tracksList);
+        var artistPage = $("<section></section>", {
+            "class": "artist-page"
+        }).append(header, /*image,*/ subHeader, tracksList);
 
         getTopTracks(artistId, artistPage);
         getRelated(artistId/*, element*/);
@@ -166,7 +173,7 @@ function getTopTracks(artistId, parent) {
     .done( function(response) {
         console.log("Artist top tracks request successful.");
 
-        var list = $("<ul>").addClass("list-group tracks-list");
+        var list = $("<ul></ul>").addClass("list-group tracks-list");
 
         for (i = 0; i < response.tracks.length; i++) {
 
@@ -174,14 +181,24 @@ function getTopTracks(artistId, parent) {
             var thisTrack = response.tracks[i];
 
             // Creates HTML elements from response data
-            var result = $("<li></li>").addClass("list-group-item track-result");
-            result.attr("data-track-id", thisTrack.id);
-            var imageElem = $("<img></img>").addClass("thumb");
-            imageElem.attr("src", findThumb(thisTrack.album));
-            var imageLink = $("<a></a>").addClass("image-link");
-            imageLink.append(imageElem);
-            var trackName = $("<a></a>").addClass("track-title link");
-            trackName.html(thisTrack.name);
+            var result = $("<li></li>", {
+                "class": "list-group-item track-result",
+                "data-track-id": thisTrack.id
+            });
+
+            var imageElem = $("<img>", {
+                "class": "thumb",
+                "src": findThumb(thisTrack.album)
+            });
+
+            var imageLink = $("<a></a>", {
+                "class": "image-link"
+            }).append(imageElem);
+
+            var trackName = $("<a></a>", {
+                "class": "track-title link",
+                html: thisTrack.name
+            });
             //
             // ADD LINK TO TRACK TITLE
             //
@@ -207,8 +224,11 @@ function getRelated(artistId, element) {
         console.log("Get Related Artists request successful.");
         console.log(response);
 
-        var header = $("<h3></h3>").addClass("sub-header");
-        header.html("Related Tracks");
+        var header = $("<h3></h3>", {
+            "class": "sub-header",
+            html: "Related Tracks"
+        });
+
         var list = $("<ul></ul>").addClass("list-group");
 
         // Iterates through first 5 related artists
@@ -238,20 +258,26 @@ function showFirstTopTrack(artistId) {
         console.log("Artist Top Tracks request successful.");
         console.log(response);
 
-
-
         // Stores JSON data for each top track
         var thisTrack = response.tracks[0];
 
         // Creates HTML elements from response data
 
-        var imageElem = $("<img></img>").addClass("thumb");
-        imageElem.attr("src", findThumb(thisTrack.album));
-        var imageLink = $("<a></a>").addClass("image-link");
-        imageLink.append(imageElem);
-        var trackName = $("<a></a>").addClass("track-title link");
-        trackName.html(thisTrack.name);
-        var artistName = $("<a></a><br>").addClass("artist-link");
+        var imageElem = $("<img></img>", {
+            "class": "thumb",
+            "src": findThumb(thisTrack.album)
+        });
+
+        var imageLink = $("<a></a>", {
+            "class": "image-link"
+        }).append(imageElem);
+
+        var trackName = $("<a></a>", {
+            "class": "track-title link",
+            html: thisTrack.name
+        });
+
+        var artistName = $("<a></a><br>", {}).addClass("artist-link");
         $.each(thisTrack.artists, function(i, obj) {
             if (i > 0) {
                 artistName.append( document.createTextNode( " & "));
